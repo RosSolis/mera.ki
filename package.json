@@ -2,21 +2,41 @@
   "name": "mera.ki",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://mera.ki/mvp",
+  "proxy": "http://localhost:8080",
   "dependencies": {
-    "body-parser": "^1.18.2",
-    "bunyan": "^1.8.12",
-    "config": "^1.26.2",
-    "express": "^4.16.2",
-    "isomorphic-fetch": "^2.2.1",
-    "lodash": "^4.17.4",
-    "react": "^16.0.0",
-    "react-dom": "^16.0.0",
+    "bunyan": "1.8.12",
+    "co-body": "5.1.1",
+    "http-shutdown": "1.2.0",
+    "isomorphic-fetch": "2.2.1",
+    "koa-omnibus": "0.9.1",
+    "koa-router": "7.2.1",
+    "koa-static": "4.0.1",
+    "lodash": "4.17.4",
+    "react": "16.0.0",
+    "react-dom": "16.0.0",
+    "shortid": "2.2.8",
+    "uuid": "3.1.0"
+  },
+  "devDependencies": {
+    "eslint": "4.10.0",
+    "eslint-config-react-app": "2.0.1",
+    "eslint-plugin-import": "2.8.0",
+    "eslint-plugin-mocha": "4.11.0",
+    "eslint-plugin-react": "7.4.0",
+    "mocha": "4.0.1",
+    "nyc": "11.2.1",
     "react-scripts": "1.0.14"
   },
   "scripts": {
-    "eslint": "eslint api src",
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom"
+    "bundle": "react-scripts build",
+    "client": "react-scripts start",
+    "eslint": "eslint .eslintrc.js api src",
+    "server": "node api | bunyan",
+    "start": "node ./scripts/start.js",
+    "test": "npm run test:server && npm run test:client",
+    "test:client": "react-scripts test --env=jsdom",
+    "test:server": "nyc mocha api/tests.js",
+    "posttest": "npm run eslint"
   }
 }
