@@ -10,7 +10,8 @@ const data = require('./data.js')
 const middleware = require('./middleware.js')
 
 const createService = _.once(() => {
-	const application = middleware.createApplication()
+	const log = data.getLogger().child({ component: 'service' })
+	const application = middleware.createApplication({ log })
 	const SERVED_FOLDER = config.get('server.path') // ../served
 	application.use(koaStatic(SERVED_FOLDER, { defer: true }))
 	const routers = [] // routers handle distinct resources:
@@ -22,7 +23,6 @@ const createService = _.once(() => {
 	}
 	application.use(middleware.redirectLinks({ data }))
 	// a "service" is (for now) just an Object w/ logger + server
-	const log = data.getLogger().child({ component: 'service' })
 	const server = HTTP.createServer(application.callback())
 	return Object.freeze({ log, server: httpShutdown(server) })
 })

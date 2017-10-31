@@ -58,6 +58,14 @@ class LinkRouter extends KoaRouter {
 
 }
 
+const createApplication = ({ log }) => omnibus.createApplication({
+	targetLogger: (options, context, fields) => log.child(fields),
+})
+
+const createDataRouter = options => new DataRouter(options)
+
+const createLinkRouter = options => new LinkRouter(options)
+
 const redirectLinks = ({ data }) => {
 	const links = link.fromStorage(data.getStorage())
 	return async function redirect ({ omnibus, query, request, response }, next) {
@@ -73,21 +81,6 @@ const redirectLinks = ({ data }) => {
 		}
 		await next()
 	}
-}
-
-const createApplication = (...args) => {
-	const options = Object.assign({}, ...args)
-	return omnibus.createApplication(options)
-}
-
-const createDataRouter = (...args) => {
-	const options = Object.assign({}, ...args)
-	return new DataRouter(options)
-}
-
-const createLinkRouter = (...args) => {
-	const options = Object.assign({}, ...args)
-	return new LinkRouter(options)
 }
 
 module.exports = {
