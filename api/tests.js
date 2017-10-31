@@ -26,7 +26,33 @@ describe('data API', () => {
 	})
 
 	after(() => {
-		assert.deepStrictEqual(mock.data, data)
+		assert.deepStrictEqual(mock.clear(), data)
+	})
+
+})
+
+describe.skip('link API', () => {
+
+	const test = { url: 'https://mera.ki/' }
+
+	before(() => {
+		Object.assign(test, real.createService())
+		return supertest(test.server)
+			.post('/api/link')
+			.send(test.url)
+			.expect(200, (code) => {
+				test.code = code
+			})
+	})
+
+	it('can shorten WHATWG URLs', () => {
+		return supertest(test.server)
+			.get(`/api/link/${test.code}`)
+			.expect(200)
+	})
+
+	after(() => {
+		assert(mock.clear(), {})
 	})
 
 })

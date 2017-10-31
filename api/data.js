@@ -46,10 +46,12 @@ const getStorage = _.once(() => {
 		})
 	const all = _.once(() => {
 		try {
-			return JSON.parse(fs.readFileSync(DATA_PATH))
+			const buffer = fs.readFileSync(DATA_PATH) // to prevent accidents:
+			fs.writeFileSync(`${DATA_PATH}.${Date.now()}.backup`, buffer)
+			return JSON.parse(buffer)
 		} catch (error) {
-			log.warn(error, `no JSON data: ${DATA_PATH}`)
-			return { [DATA_NAMESPACE]: {} } // seed state
+			log.warn({ err: error }, 'read/parse JSON failed')
+			return { [DATA_NAMESPACE]: {} } // initial state
 		}
 	})
 	process.on('sync', () => {
@@ -57,10 +59,10 @@ const getStorage = _.once(() => {
 		fs.writeFileSync(DATA_PATH, JSON.stringify(data))
 		log.info({ data, path: DATA_PATH }, 'saved JSON to file')
 	})
-	const data = all()[DATA_NAMESPACE] // pay loading cost upfront (eager read)
-	const get = (keyPath, defaultValue) => _.get(data, keyPath, defaultValue)
-	const set = (keyPath, newValue) => _.set(data, keyPath, newValue)
-	return Object.freeze({ all, get, log, set }) // storage interface
+	const root = all()[DATA_NAMESPACE] // pay loading cost upfront (eager read)
+	const get = async (keyPath, defaultValue) => _.get(root, keyPath, defaultValue)
+	const set = async (keyPath, newValue) => _.set(root, keyPath, newValue)
+	return Object.freeze({ get, log, set }) // storage interface
 })
 
 module.exports = {

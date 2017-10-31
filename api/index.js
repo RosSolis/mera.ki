@@ -8,7 +8,7 @@ module.exports = services
 if (!module.parent) {
 	const port = config.get('server.port')
 	const service = services.createService()
-	const timeout = 2000 // in milliseconds
+	const timeout = 500 // in milliseconds
 	services.startService(service, { port })
 		.then(() => {
 			// N.B. node-inspect uses SIGUSR1

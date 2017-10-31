@@ -15,10 +15,12 @@ const createService = _.once(() => {
 	application.use(koaStatic(SERVED_FOLDER, { defer: true }))
 	const routers = [] // routers handle distinct resources:
 	routers.push(middleware.createDataRouter({ data }))
+	routers.push(middleware.createLinkRouter({ data }))
 	for (const router of routers) {
 		application.use(router.routes())
 		application.use(router.allowedMethods())
 	}
+	application.use(middleware.redirectLinks({ data }))
 	// a "service" is (for now) just an Object w/ logger + server
 	const log = data.getLogger().child({ component: 'service' })
 	const server = HTTP.createServer(application.callback())
