@@ -1,0 +1,18 @@
+body {
+	font-family: monospace;
+	margin: 0;
+	padding: 0;
+}
+
+.form-group {
+	padding: 1rem;
+	margin: 1rem;
+}
+
+/*
+// animation: spin infinite 20s linear;
+@keyframes spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+*/
