@@ -47,8 +47,8 @@ class LinkRouter extends KoaRouter {
 			try {
 				const longURL = new URL(await parse.text(request)) // relative to request.origin:
 				const shortURL = new URL(`/link?id=${await links.shorten(longURL)}`, request.origin)
-				response.set('X-Markdown-Link', `[${shortURL}](${longURL})`)
-				Object.assign(response, { body: shortURL, status: 201 })
+				Object.assign(response, { body: shortURL.toString(), status: 201 })
+				omnibus.log.info({ longURL, shortURL }, 'created new URL link')
 			} catch (error) {
 				omnibus.log.warn({ err: error }, 'failed to create link (invalid URL?)')
 				throw Boom.badRequest('URL invalid; please retry or contact administrator.')
