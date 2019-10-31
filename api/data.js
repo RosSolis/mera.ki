@@ -38,6 +38,8 @@ const getLogger = _.once(() => {
 })
 
 const getStorage = _.once(() => {
+	const OPEN_NAMESPACE = 'public' // default
+	const SHUT_NAMESPACE = 'private' // default
 	const DATA_NAMESPACE = 'mera.ki' // default
 	const DATA_PATH = config.get('data.path')
 	const log = getLogger()
@@ -45,13 +47,19 @@ const getStorage = _.once(() => {
 			component: 'storage',
 		})
 	const all = _.once(() => {
+		const initial = {
+			[DATA_NAMESPACE]: {
+				[OPEN_NAMESPACE]: {},
+				[SHUT_NAMESPACE]: {},
+			},
+		}
 		try {
 			const buffer = fs.readFileSync(DATA_PATH) // to prevent accidents:
 			fs.writeFileSync(`${DATA_PATH}.${Date.now()}.backup`, buffer)
-			return JSON.parse(buffer)
+			return Object.assign(initial, JSON.parse(buffer))
 		} catch (error) {
 			log.warn({ err: error }, 'read/parse JSON failed')
-			return { [DATA_NAMESPACE]: {} } // initial state
+			return initial // initial state:
 		}
 	})
 	process.on('sync', () => {
@@ -59,10 +67,11 @@ const getStorage = _.once(() => {
 		fs.writeFileSync(DATA_PATH, JSON.stringify(data))
 		log.info({ data, path: DATA_PATH }, 'saved JSON to file')
 	})
-	const root = all()[DATA_NAMESPACE] // pay loading cost upfront (eager read)
-	const get = async (keyPath, defaultValue) => _.get(root, keyPath, defaultValue)
-	const set = async (keyPath, newValue) => _.set(root, keyPath, newValue)
-	return Object.freeze({ get, log, set }) // storage interface
+	const { [OPEN_NAMESPACE]: open, [SHUT_NAMESPACE]: shut } = all()[DATA_NAMESPACE]
+	const get = async (keyPath, defaultValue) => _.get(open, keyPath, defaultValue)
+	const set = async (keyPath, newValue) => _.set(open, keyPath, newValue)
+	const getSecret = async keyPath => _.get(shut, keyPath)
+	return Object.freeze({ get, getSecret, log, set })
 })
 
 module.exports = {

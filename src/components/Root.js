@@ -1,108 +1,67 @@
 import React from 'react'
+import ReactFontAwesome from 'react-fontawesome'
+import { Badge, Button, Jumbotron } from 'reactstrap'
+import { MemoryRouter as Router } from 'react-router-dom'
+import Types from 'prop-types'
 
-import { CopyToClipboard } from 'react-copy-to-clipboard'
-import FontAwesome from 'react-fontawesome'
+import LinkShortening from './LinkShortening.js'
+import PasswordStrength from './PasswordStrength.js'
+import TabNavigation from './TabNavigation.js'
+import UserLogin from './UserLogin.js'
 
-import {
-	Alert,
-	Badge,
-	InputGroup,
-	InputGroupButton,
-	Jumbotron,
-	Form,
-	FormGroup,
-	FormText,
-	TabContent,
-	TabPane,
-} from 'reactstrap'
+const UserWelcome = ({ currentUser }) => (
+	<Jumbotron className='m-3 p-3'>
+		<h1><Badge>{currentUser.email}</Badge>, welcome!</h1>
+		<span>Please click on one of the tabs above to get started.</span>
+	</Jumbotron>
+)
 
-class Root extends React.Component {
+UserWelcome.propTypes = {
+	currentUser: Types.object.isRequired,
+}
 
-	constructor (...args) {
-		super(...args)
-		this.state = {
-			isLoading: false,
-			lastError: null,
-			longURL: '',
-			shortURL: '',
-			textCopy: 'Copy',
-		}
-	}
+const validUser = currentUser => currentUser && currentUser.token
 
-	copyTimeout () {
-		this.setState({ textCopy: 'Copied!' })
-		setTimeout(() => this.setState({ textCopy: 'Copy' }), 1000)
-	}
+const buildHead = currentUser => validUser(currentUser)
+	? (
+		<Button onClick={() => UserLogin.logout()}>Logout</Button>
+	)
+	: (
+		<Button onClick={() => UserLogin.login()}>Login</Button>
+	)
 
-	async shortenLink (longURL) {
-		try {
-			this.setState({ isLoading: true, lastError: null, longURL: '', shortURL: '' })
-			const response = await fetch('/api/link', { body: longURL, method: 'POST' })
-			if (response.status !== 201) throw new Error(response.status)
-			this.setState({ longURL, shortURL: await response.text() })
-		} catch (error) {
-			this.setState({ lastError: error })
-		} finally {
-			this.setState({ isLoading: false })
-		}
-	}
+const buildBody = currentUser => validUser(currentUser)
+	? (
+		<TabNavigation tabs={{
+			'Welcome': (<UserWelcome currentUser={currentUser} />),
+			'Link Shortening': (<LinkShortening currentUser={currentUser} />),
+			'Password Strength': (<PasswordStrength currentUser={currentUser} />),
+		}} />
+	)
+	: (
+		<UserLogin currentUser={currentUser} />
+	)
 
-	resetForm (event) {
-		this.long.value = ''
-		this.short.value = ''
-		this.setState({ longURL: '', shortURL: '' })
-		event.preventDefault()
-	}
-
-	submitForm (event) {
-		this.shortenLink(this.long.value)
-		event.preventDefault()
-	}
-
-	render () {
-		const { isLoading, lastError, longURL, shortURL, textCopy } = this.state
-		return (
-			<div>
-				<Jumbotron>
+const Root = () => {
+	const currentUser = UserLogin.currentUser()
+	return (
+		<Router>
+			<div className='root'>
+				<Jumbotron className='text-center'>
 					<Badge>
-						<FontAwesome name='rocket' size='4x' />
+						<ReactFontAwesome name='rocket' size='4x' />
 					</Badge>
 					<h1>mera.ki</h1>
+					<div className='container'>
+						{buildHead(currentUser)}
+					</div>
 				</Jumbotron>
-				<TabContent activeTab='default'>
-					<TabPane tabId='default'>
-						<Form onSubmit={event => this.submitForm(event)}>
-							<FormGroup>
-								<Alert color='danger' isOpen={Boolean(lastError)} toggle={() => this.setState({ lastError: null })}>
-									<FormText>Sorry, but that link could not be shortened.</FormText>
-								</Alert>
-							</FormGroup>
-							<FormGroup>
-								<InputGroup>
-									{longURL
-										? (<InputGroupButton disabled={isLoading} onClick={event => this.resetForm(event)}>Another!</InputGroupButton>)
-										: (<InputGroupButton disabled={isLoading} type='submit'>Shorten</InputGroupButton>)
-									}
-									<input className='form-control' disabled={isLoading || longURL} placeholder='Long URL' ref={e => this.long = e} type='text' />
-									<InputGroupButton disabled={!longURL} href={longURL} target='_blank'>Go</InputGroupButton>
-								</InputGroup>
-							</FormGroup>
-							<FormGroup>
-								<InputGroup>
-									<CopyToClipboard onCopy={(...args) => this.copyTimeout(...args)} text={shortURL}>
-										<InputGroupButton disabled={!shortURL}>{textCopy}</InputGroupButton>
-									</CopyToClipboard>
-									<input className='form-control' disabled={true} placeholder='Short URL' ref={e => this.short = e} type='text' value={shortURL} />
-									<InputGroupButton disabled={!shortURL} href={shortURL} target='_blank'>Go</InputGroupButton>
-								</InputGroup>
-							</FormGroup>
-						</Form>
-					</TabPane>
-				</TabContent>
+				<div className='container-fluid'>
+					{buildBody(currentUser)}
+				</div>
 			</div>
-		)
-	}
-
+		</Router>
+	)
 }
 
 export default Root

@@ -1,4 +1,5 @@
 /.nyc_output
+/api/secrets.js
 /build
 /coverage
 /data.json*

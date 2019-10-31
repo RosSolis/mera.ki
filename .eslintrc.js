@@ -1,6 +1,10 @@
 /* eslint-env node */
 module.exports = {
 
+	env: {
+		es6: true,
+	},
+
 	extends: [
 		'eslint:recommended',
 		'plugin:import/recommended',
@@ -9,12 +13,15 @@ module.exports = {
 		'react-app',
 	],
 
-	env: {
-		es6: true,
-	},
-
 	parserOptions: {
+		/*
+		ecmaFeatures: {
+			experimentalObjectRestSpread: true,
+			jsx: true,
+		},
+		*/
 		ecmaVersion: 2017,
+		//sourceType: 'module',
 	},
 
 	plugins: [
@@ -25,6 +32,10 @@ module.exports = {
 
 	rules: {
 		'import/unambiguous': ['off'],
+		'indent': ['error', 'tab'],
+		'linebreak-style': ['error', 'unix'],
+		'quotes': ['error', 'single'],
+		'semi': ['error', 'never'],
 	},
 
 }
